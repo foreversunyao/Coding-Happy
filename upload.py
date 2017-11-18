@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python2.7
 import requests
 files = {'file': open('merge.txt')}
 
@@ -31,11 +31,11 @@ print r.text
 print r.status_code
 
 url='http://10.10.52.164:8000/api/merge'
-#r = requests.post(url, files=files)
+r = requests.post(url, files=files)
 print r.text
 print r.status_code
 
 url='http://10.10.52.164:8000/api/delete'
-#r = requests.post(url, files=files2)
+r = requests.post(url, files=files2)
 print r.text
 print r.status_code
