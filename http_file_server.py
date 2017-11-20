@@ -38,7 +38,7 @@ import BaseHTTPServer
 import urllib
 import cgi
 import sys
-#import shutil
+import shutil
 #import mimetypes
 import time
 import tarfile
@@ -46,13 +46,21 @@ import tarfile
 
 class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     
-    def do_GET(self):
+    def do_GET(self,filepath):
         """Serve a GET request."""
 	## TO DO
+	with open(filepath, 'rb') as f:
+            self.send_response(200)
+            self.send_header("Content-Type", 'application/octet-stream')
+            self.send_header("Content-Disposition", 'attachment; filename="{}"'.format(os.path.basename(filepath)))
+            fs = os.fstat(f.fileno())
+            self.send_header("Content-Length", str(fs.st_size))
+            self.end_headers()
+            shutil.copyfileobj(f, self.wfile)
 
     def return_POST(self,r,m):
 	## REPONSE INFO
-	info_code = {0: 'upload success',1: 'upload failed',2: 'exists file',3: 'no this file',4: 'delete success',5: 'merge success', 6: 'merge failed'}
+	info_code = {0: 'upload success',1: 'upload failed',2: 'exists file',3: 'no this file',4: 'delete success',5: 'merge success', 6: 'merge failed',7: 'api not support'}
         if r:
             self.send_response(200)
 	    self.send_header("Content-type", "text/html")
@@ -86,15 +94,12 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.upload_file(form,upload_path)
 	elif "/api/search" in self.path:
 		self.search_file(form,upload_path)
-                self.do_GET()
 	elif "/api/delete" in self.path:
 		self.delete_file(form,upload_path)
-                self.do_GET()
 	elif "/api/merge" in self.path:
 		self.merge_file(form,upload_path)
-                self.do_GET()
 	else :
-		self.do_GET()
+		self.return_POST(2,7)
 
     def merge_file(self,form,upload_path):
 	
@@ -160,10 +165,36 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         filepath = os.path.join(upload_path, filename)
         compressionfile_path=upload_path+'/compress/compressionfile.list' 
 	if os.path.exists(filepath):
-		    self.return_POST(1,2)
+		    #self.return_POST(1,2)
+		    self.do_GET(filepath)
 	## FOR SEARCH COMPRESSED FILES
 	elif os.path.exists(compressionfile_path) and filename in open(compressionfile_path).read():
-		    self.return_POST(1,2)
+		    #self.return_POST(1,2)
+		    searched = 0
+		    for line in reversed(open(compressionfile_path).readlines()):
+                        if searched == 0 and filename in line:
+                                searched = 1
+                                continue
+                        if searched == 1 and line.startswith("compression-"):
+                        ## TAR ZXVF COMPRESSION FILE AND READ FILE AND  REMOVE THE FILE AND TAR ZCVF AGAIN
+                                os.chdir(upload_path+'/compress/')
+                                tar = tarfile.open(line[:-1])
+                                names = tar.getnames()
+                                tar.extractall()
+				timestamp = int(time.time())
+				tmpfile = filename+str(timestamp)
+				shutil.copy2(filename, tmpfile)
+				tar.close()
+				self.do_GET(upload_path+'/compress/'+tmpfile)
+                                tar = tarfile.open(line[:-1],"w:gz")
+                                for name in names:
+                                        tar.add(name)
+                                tar.close()
+				for name in names:
+                                         os.remove(name)
+				os.remove(upload_path+'/compress/'+tmpfile)				
+                                break
+		    
 	else:
 		    self.return_POST(1,3)
 
