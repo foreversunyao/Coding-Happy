@@ -20,22 +20,34 @@ r = requests.post(url, files=files3)
 print r.text
 print r.status_code
 
-url='http://10.10.52.164:8000/api/search'
+url='http://10.10.52.164:8000/api/retrieve'
 r = requests.post(url, files=files2)
 print r.text
 print r.status_code
 
-url='http://10.10.52.164:8000/api/search'
+url='http://10.10.52.164:8000/api/retrieve'
 r = requests.post(url, files=files3)
 print r.text
 print r.status_code
 
-url='http://10.10.52.164:8000/api/merge'
-r = requests.post(url, files=files)
+
+url='http://10.10.52.164:8000/api/delete'
+r = requests.post(url, files=files2)
 print r.text
 print r.status_code
 
 url='http://10.10.52.164:8000/api/delete'
+r = requests.post(url, files=files3)
+print r.text
+print r.status_code
+
+
+url='http://10.10.52.164:8000/api/retrieve'
 r = requests.post(url, files=files2)
+print r.text
+print r.status_code
+
+url='http://10.10.52.164:8000/api/retrieve'
+r = requests.post(url, files=files3)
 print r.text
 print r.status_code
