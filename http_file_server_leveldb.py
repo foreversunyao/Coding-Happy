@@ -5,7 +5,6 @@
 Support upload files
 Support search files
 Support delete files
-Support compress files
 """
 
 """Limit.
