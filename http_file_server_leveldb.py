@@ -77,10 +77,12 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.delete_file(form)
 	else :
 		self.return_POST(2,5)
-
+    def get_dbconn(self):
+	db = leveldb.LevelDB("/var/upload/db", create_if_missing=True)
+	return db
     def search_file(self,filename):
 	try:
-		db = leveldb.LevelDB("/var/upload/db", create_if_missing=True)
+		db = self.get_dbconn()
         	db.Get(filename)
 	except:
 		print "This file "+filename+" not exist."
@@ -92,7 +94,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         filevalue = form['file'].value
 	if self.search_file(filename) == 0:
 		try:
-			db = leveldb.LevelDB("/var/upload/db", create_if_missing=True)
+			db = self.get_dbconn()
 			db.Put(filename,filevalue)
 			self.return_POST(1,0)
 		except:
@@ -109,7 +111,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		    self.return_POST(1,3)
 	else:
 		try:
-		    db = leveldb.LevelDB("/var/upload/db", create_if_missing=True)
+		    db = self.get_dbconn()
 		    content = db.Get(filename)
 	            self.do_GET(filename,content)		
 		except:
@@ -123,7 +125,7 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		    self.return_POST(1,3)
 	else:
 		    try:
-		    	db = leveldb.LevelDB("/var/upload/db", create_if_missing=True)
+		    	db = self.get_dbconn()
 		    	db.Delete(filename)
 		    	self.return_POST(1,4)
 		    except:
