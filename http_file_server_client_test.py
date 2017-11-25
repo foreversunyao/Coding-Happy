@@ -15,7 +15,7 @@ r = requests.post(url, files=files2)
 print r.text
 print r.status_code
 
-url='http://10.10.52.164:8000/api/upload'
+url='http://10.10.52.164:8000/api/forceupload'
 r = requests.post(url, files=files3)
 print r.text
 print r.status_code

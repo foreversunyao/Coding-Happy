@@ -5,6 +5,7 @@
 Support upload files
 Support search files
 Support delete files
+Support force upload files
 """
 
 """Limit.
@@ -75,6 +76,8 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.retrieve_file(form)
 	elif "/api/delete" in self.path:
 		self.delete_file(form)
+	elif "/api/forceupload" in self.path:
+		self.force_upload(form)
 	else :
 		self.return_POST(2,5)
     def get_dbconn(self):
@@ -132,6 +135,17 @@ class SimpleHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 			print "Delete File "+filename+" Failed."
 			self.return_POST(2,6)
 
+    def force_upload(self,form):
+	### Never consider if there is any file has the same filename, just cover
+        filename = form['file'].filename
+        filevalue = form['file'].value
+        try:
+             db = self.get_dbconn()
+             db.Put(filename,filevalue)
+             self.return_POST(1,0)
+        except:
+             print "Write File "+filename+" Failed."
+             self.return_POST(2,6)
 
 def run_server(HandlerClass = SimpleHTTPRequestHandler,
          ServerClass = BaseHTTPServer.HTTPServer):
